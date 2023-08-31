@@ -1,0 +1,123 @@
+{% load static %}
+
+<section id="newUrl">
+    <div class="container text-center">
+      <div class="row justify-content-center align-items-center g-5 py-3">
+      
+        <div class="col-lg-5 col-md-8 col-sm-10">
+          <input type="search" id="searchUser" class="form-control border-info" placeholder="Search">
+        </div>
+        <div class="col-1 ">
+          <button class="btn btn-info" id="searchButton"> search</button>
+        </div>
+        <script>
+          $(document).ready(function(){
+            $('#searchButton').click(function(){
+              var searchTerm = $('#searchUser').val();
+              $.ajax({
+                url:'search-result',
+                type:'POST',
+                data:JSON.stringify({
+                    value : searchTerm,
+                }),
+                success:function(response){
+                    $('#newUrl').html(response);
+                }
+            })
+
+            })
+          });
+
+        </script>
+       
+      </div>
+     
+     
+    </div>
+    <div class="container text-center">
+      <div class="btn-group" role="group">
+        <p>
+          <a class="s_active" type="button" href="/">All</a>
+          {% for i in a2z %}
+           | <button type="button" class=" btn btn-sm s_active" id="{{ i }}">{{ i }}</button>
+          {% endfor %}
+      </p>
+      <script>
+        $('a.s_active').attr('class',' btn btn-sm text-info');
+        $(document).ready(function(){
+          $('button.s_active').click(function(){
+            var serachValue = ($(this).attr('id'));
+            $.ajax({
+              url:'filter-view',
+              type:'POST',
+              data:JSON.stringify({
+                  value : serachValue,
+              }),
+              success:function(response){
+                  $('#newUrl').html(response);
+              }
+          })
+
+          })
+
+        }); </script>
+      </div>
+    </div>
+
+
+
+    <div class="container mb-5">
+      <div class="row justify-content-center g-2" style="padding-left:30px;padding-right:30px;padding-top:30px">
+
+          {% for i in usrs %}
+          <div class="col-lg-3 col-md-6 col-sm-12" style="padding:10px">
+              <div class="card h-100" style="overflow: hidden;box-shadow: 7px 7px 20px rgb(178,193,208)">
+
+
+                <div class="row">
+                    <div class="col-lg-12 col-md-4 col-sm-6 col-6">
+                        {% if i.userprofileimg %}
+                            <img src="media/{{ i.userprofileimg }}" onerror="this.onerror=null;this.src='{% static '/images/default_user.jpg' %}';"  class="card-img-top" style="padding:2px"  alt="...">
+                        {% else %}
+                            <img src="{% static '/images/default_user.jpg' %}" class="card-img-top"  style="padding:2px" alt="...">
+                        {% endif %}
+                            
+                    </div>
+                    <div class="col-lg-12 col-md-8 col-sm-6 col-6">
+                        <div class="card-body">
+                            <h1 class="display-6"><b>{{ i.username }}</b></h1>
+                            <small style="font-size: 13px;color: rgba(33,37,41,0.63);">Lorem ipsum dolor sit amet,</small>
+                            <div id="values{{ i.userid }}">
+                              <p class="card-text text-info">O:<span id="value{{ i.userid }}1"></span></p>
+                              <p class="card-text text-info" id="hide{{ i.userid }}">M:<span id="value{{ i.userid }}2"></span></p>
+                          </div>
+                          
+                          <script>
+                            $(document).ready(function(){
+                              var myString = "{{ i.userphone }}";
+                              var values = myString.split(',');
+                              var val2 = values[1]||'';
+                              document.getElementById('value{{ i.userid }}1').textContent = values[0];
+                              
+                                if (val2 === '') {
+                                  $('#hide{{ i.userid }}').hide();
+                              } else {
+                                  document.getElementById('value{{ i.userid }}2').textContent = values[1];
+                              }
+                              });
+                          </script>
+                          <small class="card-text text-info"><i>{{ i.usermail }}</i></small>
+                        </div>
+                        
+                    </div>
+                </div>
+
+
+                </div>
+          </div>
+          {% endfor %}
+
+      </div>
+
+    </div>
+  </section>

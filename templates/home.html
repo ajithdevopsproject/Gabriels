@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+
+<head>
+  <title>Title</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script></body>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+</head>
+
+<body>
+  <header>
+    <!-- place navbar here -->
+    <nav class="navbar navbar-light navbar-expand-md sticky-top bg-white py-3">
+        <div class="container"><a class="navbar-brand d-flex align-items-center" href="#"><span class="bs-icon-sm bs-icon-rounded text-info d-flex justify-content-center align-items-center me-2 bs-icon"><svg class="bi bi-bezier" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M0 10.5A1.5 1.5 0 0 1 1.5 9h1A1.5 1.5 0 0 1 4 10.5v1A1.5 1.5 0 0 1 2.5 13h-1A1.5 1.5 0 0 1 0 11.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm10.5.5A1.5 1.5 0 0 1 13.5 9h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM6 4.5A1.5 1.5 0 0 1 7.5 3h1A1.5 1.5 0 0 1 10 4.5v1A1.5 1.5 0 0 1 8.5 7h-1A1.5 1.5 0 0 1 6 5.5v-1zM7.5 4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"></path>
+                        <path d="M6 4.5H1.866a1 1 0 1 0 0 1h2.668A6.517 6.517 0 0 0 1.814 9H2.5c.123 0 .244.015.358.043a5.517 5.517 0 0 1 3.185-3.185A1.503 1.503 0 0 1 6 5.5v-1zm3.957 1.358A1.5 1.5 0 0 0 10 5.5v-1h4.134a1 1 0 1 1 0 1h-2.668a6.517 6.517 0 0 1 2.72 3.5H13.5c-.123 0-.243.015-.358.043a5.517 5.517 0 0 0-3.185-3.185z"></path>
+                    </svg></span><span class="text-info">LOGO</span></a><button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+            <div id="navcol-2" class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link link-info" href="#">HOME</a></li>
+                    <li class="nav-item"><a class="nav-link link-info" href="#">ADD USER</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  </header>
+  <main>
+  <section>
+    <div class="container">
+        <div>
+            <h1 class="d-md-flex justify-content-md-center" style="color: rgba(21,31,34,0.56);font-weight: bold;/*margin-top: 12px;*/padding-top: 23px;padding-bottom: 23px;margin-bottom: 2px;">OUR CUSTOMERS</h1>
+        </div>
+    </div>
+  </section>
+
+  <section id="newUrl">
+    <div class="container text-center">
+      <div class="row justify-content-center align-items-center g-5 py-3">
+      
+        <div class="col-lg-5 col-md-8 col-sm-10">
+          <input type="search" id="searchUser" class="form-control border-info" placeholder="Search">
+        </div>
+        <div class="col-1 ">
+          <button class="btn btn-info" id="searchButton"> search</button>
+        </div>
+        <script>
+          $(document).ready(function(){
+            $('#searchButton').click(function(){
+              var searchTerm = $('#searchUser').val();
+              $.ajax({
+                url:'search-result',
+                type:'POST',
+                data:JSON.stringify({
+                    value : searchTerm,
+                }),
+                success:function(response){
+                    $('#newUrl').html(response);
+                }
+            })
+
+            })
+          });
+
+        </script>
+       
+      </div>
+     
+     
+    </div>
+    <div class="container text-center">
+      <div class="btn-group" role="group">
+        <p>
+          <a class="s_active" type="button" href="/">All</a>
+          {% for i in a2z %}
+           | <button type="button" class=" btn btn-sm s_active" id="{{ i }}">{{ i }}</button>
+          {% endfor %}
+      </p>
+      <script>
+        $('a.s_active').attr('class',' btn btn-sm text-info');
+        $(document).ready(function(){
+          $('button.s_active').click(function(){
+            var serachValue = ($(this).attr('id'));
+            $.ajax({
+              url:'filter-view',
+              type:'POST',
+              data:JSON.stringify({
+                  value : serachValue,
+              }),
+              success:function(response){
+                  $('#newUrl').html(response);
+              }
+          })
+
+          })
+
+        }); </script>
+      </div>
+    </div>
+
+
+
+    <div class="container mb-5">
+      <div class="row justify-content-center g-2" style="padding-left:30px;padding-right:30px;padding-top:30px">
+
+          {% for i in usrs %}
+          <div class="col-lg-3 col-md-6 col-sm-12" style="padding:10px">
+              <div class="card h-100" style="overflow: hidden;box-shadow: 7px 7px 20px rgb(178,193,208)">
+                <div class="row">
+                  <div class="col-lg-12 col-md-4 col-sm-6 col-6">
+
+                    {% if i.userprofileimg %}
+                      <img src="media/{{ i.userprofileimg }}" onerror="this.onerror=null;this.src='{% static '/images/default_user.jpg' %}';"  class="card-img-top" style="padding:2px"  alt="...">
+                    {% else %}
+                      <img src="{% static '/images/default_user.jpg' %}" class="card-img-top"  style="padding:2px" alt="...">
+                    {% endif %}
+                    
+                  </div>
+                  <div class="col-lg-12 col-md-8 col-sm-6 col-6">
+                    <div class="card-body">
+                      <h1 class="display-6"><b>{{ i.username }}</b></h1>
+                      <small style="font-size: 13px;color: rgba(33,37,41,0.63);">Lorem ipsum dolor sit amet,</small>
+                      <div id="values{{ i.userid }}">
+                        <p class="card-text text-info">O:<span id="value{{ i.userid }}1"></span></p>
+                        <p class="card-text text-info" id="hide{{ i.userid }}">M:<span id="value{{ i.userid }}2"></span></p>
+                    </div>
+                    
+                    <script>
+                      $(document).ready(function(){
+                        var myString = "{{ i.userphone }}";
+                        var values = myString.split(',');
+                        var val2 = values[1]||'';
+                        document.getElementById('value{{ i.userid }}1').textContent = values[0];
+                        
+                          if (val2 === '') {
+                            $('#hide{{ i.userid }}').hide();
+                        } else {
+                            document.getElementById('value{{ i.userid }}2').textContent = values[1];
+                        }
+                        });
+                    </script>
+                    <small class="card-text text-info"><i>{{ i.usermail }}</i></small>
+                  </div>
+                    
+                  </div>
+                </div>
+    
+                 
+                </div>
+          </div>
+          {% endfor %}
+
+      </div>
+
+    </div>
+  </section>
+
+  </main>
+  <footer class="bg-dark">
+    <div class="container text-light">
+      <div class="row align-items-center g-2">
+        <div class="col-6">
+          <p><i class="bi bi-person-circle"></i> Maripandi P</p>
+          <p><i class="bi bi-envelope-at-fill"></i> maripandi421@gmail.com</p>
+        </div>
+        <div class="col-6 text-end">
+          
+          <p> <i class="bi bi-github"></i> @maripandi</p>
+          <p><i class="bi bi-telephone-fill"></i> +91 9043735730</p>
+
+        </div>
+    
+      </div>
+      
+    </div>
+    <!-- place footer here -->
+    
+  </footer>
+  <!-- Bootstrap JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+    integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+    integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+  </script>
+
+
+</html>
+
+
+
