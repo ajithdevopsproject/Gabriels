@@ -15,7 +15,7 @@
 	DATABASES = {
     		'default': {
         		'ENGINE': 'django.db.backends.mysql',
-        		'NAME': 'wiselearnz_mari',
+        		'NAME': 'wiselearns_mari',
         		'USER': '<your mysql username>',
         		'PASSWORD':'<your mysql password>',
         		'HOST':'<your host name>',
