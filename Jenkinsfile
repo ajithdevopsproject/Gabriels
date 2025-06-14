@@ -11,6 +11,22 @@ pipeline {
             }
         }
 
+        stage('Install MySQL & Configure Port') {
+            steps {
+                sh '''
+                    sudo apt update
+                    sudo apt install -y mysql-server
+
+                    # Allow external connections
+                    sudo sed -i "s/^bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
+                    sudo systemctl restart mysql
+
+                    # Open port 3306 if UFW is enabled
+                    sudo ufw allow 3306/tcp || true
+                '''
+            }
+        }
+
         stage('Create Virtual Environment') {
             steps {
                 sh 'python3 -m venv ${VENV}'
