@@ -2,77 +2,100 @@ pipeline {
     agent any
 
     environment {
-        VENV = 'django-venv'
-        DJANGO_PORT = '8000'
-        MYSQL_PORT = '3306'
-        MYSQL_HOST = '172.31.12.126'
-        MYSQL_USER = 'admin'
-        MYSQL_PASSWORD = 'Admin@123'
-        MYSQL_DB = 'wiselearns_mari'
-        MYSQL_SCRIPT = 'mysql_script.sql'
+        REPO_URL = "https://github.com/ajithdevopsproject/Gabriels.git"
+        REPO_DIR = "Gabriels"
+        GIT_PAT = "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"
     }
 
     stages {
-        stage('System Update and Firewall Config') {
+        stage('System Setup') {
             steps {
                 sh '''
-                    echo "Granting Jenkins user full access..."
-                    echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/jenkins
+                echo "=== Updating system packages ==="
+                sudo apt update -y
+                sudo apt upgrade -y
 
-                    echo "Updating packages and opening ports..."
-                    sudo apt update -y
-                    sudo apt install -y python3-venv python3-pip mysql-client ufw
+                echo "=== Installing Python3, pip, venv, MySQL client, and build tools ==="
+                sudo apt install -y python3 python3-pip python3-venv \
+                    default-libmysqlclient-dev build-essential \
+                    pkg-config libmysqlclient-dev ufw
 
-                    # Open MySQL and Django ports
-                    sudo ufw allow ${MYSQL_PORT}/tcp
-                    sudo ufw allow ${DJANGO_PORT}/tcp
-                    sudo ufw --force enable
-
-                    echo "System and firewall configuration complete."
+                echo "=== Enabling UFW and allowing necessary ports ==="
+                sudo ufw --force enable
+                sudo ufw allow 22
+                sudo ufw allow 80
+                sudo ufw allow 8000
+                sudo ufw allow 8080
+		 sudo ufw allow 8306
+                sudo ufw reload
                 '''
             }
         }
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/ajithdevopsproject/Gabriels.git'
-            }
-        }
-
-        stage('Create Virtual Environment') {
+        stage('Clone Repo') {
             steps {
                 sh '''
-                    python3 -m venv ${VENV}
-                    . ${VENV}/bin/activate
-                    pip install --upgrade pip
+                echo "=== Cloning your GitHub project using PAT ==="
+                if [ -d "${REPO_DIR}" ]; then
+                    echo "Directory '${REPO_DIR}' already exists. Skipping clone."
+                else
+                    git clone https://ajithdevopsproject:${GIT_PAT}@github.com/ajithdevopsproject/Gabriels.git
+                fi
                 '''
             }
         }
 
-        stage('Install Requirements') {
+        stage('Setup Python Virtual Env') {
             steps {
                 sh '''
-                    . ${VENV}/bin/activate
-                    pip install -r requirements.txt
+                cd ${REPO_DIR}
+                echo "=== Creating virtual environment ==="
+                if [ -d "django-venv" ]; then
+                    echo "Removing existing virtual environment..."
+                    rm -rf django-venv
+                fi
+
+                python3 -m venv django-venv
+                source django-venv/bin/activate
+
+                echo "=== Installing Python requirements ==="
+                pip install --upgrade pip
+                pip install -r requirements.txt
                 '''
             }
         }
 
-        stage('Run MySQL Script') {
+        stage('Configure settings.py') {
             steps {
                 sh '''
-                    echo "Executing MySQL initialization script..."
-                    mysql -h ${MYSQL_HOST} -P 80 -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DB} < ${MYSQL_SCRIPT}
+                cd ${REPO_DIR}
+                echo "=== Configuring settings.py ==="
+                cat <<EOL > Gabriels_task/Gabriels_task/settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'wiselearns_mari',
+        'USER': 'admin',
+        'PASSWORD': 'Admin@123',
+        'HOST': '13.204.81.191',
+        'PORT': '3306'
+    }
+}
+EOL
                 '''
             }
         }
 
-        stage('Run Django Server') {
+        stage('Apply Migrations and Run Server') {
             steps {
                 sh '''
-                    echo "Starting Django server..."
-                    . ${VENV}/bin/activate
-                    nohup python manage.py runserver 0.0.0.0:${DJANGO_PORT} &
+                cd ${REPO_DIR}
+                source django-venv/bin/activate
+                echo "=== Running migrations ==="
+                python manage.py migrate
+
+                echo "=== Starting Django server ==="
+                nohup python manage.py runserver 0.0.0.0:8000 &
                 '''
             }
         }
