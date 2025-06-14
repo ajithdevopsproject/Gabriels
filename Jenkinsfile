@@ -19,12 +19,11 @@ pipeline {
                 sudo apt install -y python3 python3-pip python3-venv \
                     default-libmysqlclient-dev build-essential \
                     pkg-config libmysqlclient-dev ufw
-
-                
                 '''
             }
         }
-stage('UFW and allowing necessary ports') {
+
+        stage('UFW and Allow Necessary Ports') {
             steps {
                 sh '''
                 echo "=== Enabling UFW and allowing necessary ports ==="
@@ -33,7 +32,7 @@ stage('UFW and allowing necessary ports') {
                 sudo ufw allow 80
                 sudo ufw allow 8000
                 sudo ufw allow 8080
-		        sudo ufw allow 8306
+                sudo ufw allow 3306
                 sudo ufw reload
                 '''
             }
@@ -55,15 +54,15 @@ stage('UFW and allowing necessary ports') {
         stage('Setup Python Virtual Env') {
             steps {
                 sh '''
-                cd ${REPO_DIR}
                 echo "=== Creating virtual environment ==="
+                cd "${REPO_DIR}"
                 if [ -d "django-venv" ]; then
                     echo "Removing existing virtual environment..."
                     rm -rf django-venv
                 fi
 
                 python3 -m venv django-venv
-                source django-venv/bin/activate
+                . django-venv/bin/activate
 
                 echo "=== Installing Python requirements ==="
                 pip install --upgrade pip
@@ -75,8 +74,8 @@ stage('UFW and allowing necessary ports') {
         stage('Configure settings.py') {
             steps {
                 sh '''
-                cd ${REPO_DIR}
                 echo "=== Configuring settings.py ==="
+                cd "${REPO_DIR}"
                 cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 DATABASES = {
     'default': {
@@ -84,7 +83,7 @@ DATABASES = {
         'NAME': 'wiselearns_mari',
         'USER': 'admin',
         'PASSWORD': 'Admin@123',
-        'HOST': '13.204.81.191',
+        'HOST': '13.203.209.162',
         'PORT': '3306'
     }
 }
@@ -96,12 +95,10 @@ EOL
         stage('Apply Migrations and Run Server') {
             steps {
                 sh '''
-                cd ${REPO_DIR}
-                source django-venv/bin/activate
-                echo "=== Running migrations ==="
+                echo "=== Running migrations and starting server ==="
+                cd "${REPO_DIR}"
+                . django-venv/bin/activate
                 python manage.py migrate
-
-                echo "=== Starting Django server ==="
                 nohup python manage.py runserver 0.0.0.0:8000 &
                 '''
             }
