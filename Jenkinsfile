@@ -4,7 +4,7 @@ pipeline {
     environment {
         REPO_URL = "https://github.com/ajithdevopsproject/Gabriels.git"
         REPO_DIR = "Gabriels"
-        GIT_PAT = "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"
+        
     }
 
     stages {
@@ -20,13 +20,20 @@ pipeline {
                     default-libmysqlclient-dev build-essential \
                     pkg-config libmysqlclient-dev ufw
 
+                
+                '''
+            }
+        }
+stage('UFW and allowing necessary ports') {
+            steps {
+                sh '''
                 echo "=== Enabling UFW and allowing necessary ports ==="
                 sudo ufw --force enable
                 sudo ufw allow 22
                 sudo ufw allow 80
                 sudo ufw allow 8000
                 sudo ufw allow 8080
-		 sudo ufw allow 8306
+		        sudo ufw allow 8306
                 sudo ufw reload
                 '''
             }
