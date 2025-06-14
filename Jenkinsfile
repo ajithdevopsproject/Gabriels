@@ -4,21 +4,20 @@ pipeline {
     environment {
         REPO_URL = "https://github.com/ajithdevopsproject/Gabriels.git"
         REPO_DIR = "Gabriels"
-        GIT_PAT = "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"
+        GIT_PAT = "your_actual_github_pat"
+        DJANGO_HOST = "13.203.209.162"
     }
 
     stages {
+
         stage('System Setup') {
             steps {
                 sh '''
                 echo "=== Updating system packages ==="
                 sudo apt update -y
-                sudo apt upgrade -y
-
-                echo "=== Installing Python3, pip, venv, MySQL client, and build tools ==="
                 sudo apt install -y python3 python3-pip python3-venv \
                     default-libmysqlclient-dev build-essential \
-                    pkg-config libmysqlclient-dev ufw
+                    pkg-config libmysqlclient-dev ufw git
                 '''
             }
         }
@@ -26,62 +25,57 @@ pipeline {
         stage('Firewall Setup') {
             steps {
                 sh '''
-                echo "=== Enabling UFW and allowing ports ==="
+                echo "=== Configuring UFW Firewall ==="
                 sudo ufw --force enable
                 sudo ufw allow 22
                 sudo ufw allow 80
                 sudo ufw allow 8000
-                sudo ufw allow 8080
                 sudo ufw allow 3306
                 sudo ufw reload
                 '''
             }
         }
 
-        stage('Clone Repo') {
+        stage('Clone GitHub Repository') {
             steps {
                 sh '''
-                echo "=== Cloning GitHub repo ==="
+                echo "=== Cloning GitHub repository ==="
                 rm -rf ${REPO_DIR}
                 git clone https://ajithdevopsproject:${GIT_PAT}@github.com/ajithdevopsproject/Gabriels.git
                 '''
             }
         }
 
-        stage('Setup Python Env and Install Packages') {
+        stage('Set Up Python Environment') {
             steps {
                 sh '''
+                echo "=== Creating virtual environment and installing Python packages ==="
                 cd ${REPO_DIR}
-
-                echo "=== Creating virtual environment ==="
                 python3 -m venv django-venv
-                . django-venv/bin/activate
-
-                echo "=== Installing required Python packages ==="
-                pip install --upgrade pip
-                pip install asgiref==3.7.2 Django==4.2.4 mysqlclient==2.2.0 \
-                    PyMySQL==1.1.0 sqlparse==0.4.4 tzdata==2023.3
+                bash -c '
+                    source django-venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '
                 '''
             }
         }
 
-               stage('Configure settings.py') {
+        stage('Configure Django settings.py') {
             steps {
                 sh '''
+                echo "=== Creating custom settings.py with DB config ==="
                 cd ${REPO_DIR}
-
-                echo "=== Ensuring settings.py directory exists ==="
-                mkdir -p Gabriels_task/Gabriels_task
-
-                echo "=== Configuring settings.py ==="
                 cat <<EOL > Gabriels_task/Gabriels_task/settings.py
+ALLOWED_HOSTS = ['${DJANGO_HOST}']
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'wiselearns_mari',
         'USER': 'admin',
         'PASSWORD': 'Admin@123',
-        'HOST': '13.203.209.162',
+        'HOST': '${DJANGO_HOST}',
         'PORT': '3306'
     }
 }
@@ -90,18 +84,16 @@ EOL
             }
         }
 
-
-        stage('Migrate and Run Django App') {
+        stage('Run Django App') {
             steps {
                 sh '''
+                echo "=== Applying migrations and starting Django server ==="
                 cd ${REPO_DIR}
-                . django-venv/bin/activate
-
-                echo "=== Applying migrations ==="
-                python manage.py migrate
-
-                echo "=== Starting Django server ==="
-                nohup python manage.py runserver 0.0.0.0:8000 &
+                bash -c '
+                    source django-venv/bin/activate
+                    python manage.py migrate
+                    nohup python manage.py runserver 0.0.0.0:8000 &
+                '
                 '''
             }
         }
