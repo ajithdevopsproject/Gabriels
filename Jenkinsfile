@@ -65,10 +65,14 @@ pipeline {
             }
         }
 
-        stage('Configure settings.py') {
+               stage('Configure settings.py') {
             steps {
                 sh '''
                 cd ${REPO_DIR}
+
+                echo "=== Ensuring settings.py directory exists ==="
+                mkdir -p Gabriels_task/Gabriels_task
+
                 echo "=== Configuring settings.py ==="
                 cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 DATABASES = {
@@ -85,6 +89,7 @@ EOL
                 '''
             }
         }
+
 
         stage('Migrate and Run Django App') {
             steps {
