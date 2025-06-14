@@ -4,8 +4,8 @@ pipeline {
     environment {
         REPO_URL = "https://github.com/ajithdevopsproject/Gabriels.git"
         REPO_DIR = "Gabriels"
-        GIT_PAT = "your_actual_github_pat"
-        DJANGO_HOST = "13.203.209.162"
+        GIT_PAT = "your_actual_github_pat"  // ❗Replace with your actual GitHub Personal Access Token
+        DJANGO_HOST = "13.203.209.162"      // ✅ Use public IP or domain here
     }
 
     stages {
@@ -13,7 +13,7 @@ pipeline {
         stage('System Setup') {
             steps {
                 sh '''
-                echo "=== Updating system packages ==="
+                echo "=== Updating system packages and installing dependencies ==="
                 sudo apt update -y
                 sudo apt install -y python3 python3-pip python3-venv \
                     default-libmysqlclient-dev build-essential \
@@ -49,7 +49,7 @@ pipeline {
         stage('Set Up Python Environment') {
             steps {
                 sh '''
-                echo "=== Creating virtual environment and installing Python packages ==="
+                echo "=== Creating Python virtual environment and installing requirements ==="
                 cd ${REPO_DIR}
                 python3 -m venv django-venv
                 bash -c '
@@ -64,8 +64,9 @@ pipeline {
         stage('Configure Django settings.py') {
             steps {
                 sh '''
-                echo "=== Creating custom settings.py with DB config ==="
+                echo "=== Writing settings.py with DB and ALLOWED_HOSTS ==="
                 cd ${REPO_DIR}
+                mkdir -p Gabriels_task/Gabriels_task
                 cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 ALLOWED_HOSTS = ['${DJANGO_HOST}']
 
@@ -84,10 +85,10 @@ EOL
             }
         }
 
-        stage('Run Django App') {
+        stage('Run Django Application') {
             steps {
                 sh '''
-                echo "=== Applying migrations and starting Django server ==="
+                echo "=== Running Django app ==="
                 cd ${REPO_DIR}
                 bash -c '
                     source django-venv/bin/activate
