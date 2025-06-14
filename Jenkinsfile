@@ -4,7 +4,7 @@ pipeline {
     environment {
         REPO_URL = "https://github.com/ajithdevopsproject/Gabriels.git"
         REPO_DIR = "Gabriels"
-        
+        GIT_PAT = "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"
     }
 
     stages {
