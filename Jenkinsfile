@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('System Setup') {
             steps {
                 sh '''
@@ -23,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('UFW and Allow Necessary Ports') {
+        stage('UFW Firewall Configuration') {
             steps {
                 sh '''
                 echo "=== Enabling UFW and allowing necessary ports ==="
@@ -41,9 +42,11 @@ pipeline {
         stage('Clone Repo') {
             steps {
                 sh '''
-                echo "=== Cloning your GitHub project using PAT ==="
+                echo "=== Cloning GitHub repo with PAT ==="
                 if [ -d "${REPO_DIR}" ]; then
-                    echo "Directory '${REPO_DIR}' already exists. Skipping clone."
+                    echo "Repo already exists. Pulling latest changes."
+                    cd ${REPO_DIR}
+                    git pull
                 else
                     git clone https://ajithdevopsproject:${GIT_PAT}@github.com/ajithdevopsproject/Gabriels.git
                 fi
@@ -51,20 +54,30 @@ pipeline {
             }
         }
 
-        stage('Setup Python Virtual Env') {
+        stage('Python Virtual Env & Requirements') {
             steps {
                 sh '''
-                echo "=== Creating virtual environment ==="
-                cd "${REPO_DIR}"
+                echo "=== Setting up Python environment and installing requirements ==="
+                cd ${REPO_DIR}
                 if [ -d "django-venv" ]; then
-                    echo "Removing existing virtual environment..."
+                    echo "Removing old virtual environment..."
                     rm -rf django-venv
                 fi
 
                 python3 -m venv django-venv
                 . django-venv/bin/activate
 
-                echo "=== Installing Python requirements ==="
+                echo "Writing requirements.txt"
+                cat <<EOF > requirements.txt
+asgiref==3.7.2
+Django==4.2.4
+mysqlclient==2.2.0
+PyMySQL==1.1.0
+sqlparse==0.4.4
+tzdata==2023.3
+EOF
+
+                echo "Installing requirements..."
                 pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
@@ -74,8 +87,8 @@ pipeline {
         stage('Configure settings.py') {
             steps {
                 sh '''
-                echo "=== Configuring settings.py ==="
-                cd "${REPO_DIR}"
+                echo "=== Configuring Django settings.py ==="
+                cd ${REPO_DIR}
                 cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 DATABASES = {
     'default': {
@@ -92,11 +105,11 @@ EOL
             }
         }
 
-        stage('Apply Migrations and Run Server') {
+        stage('Run Migrations & Start Server') {
             steps {
                 sh '''
-                echo "=== Running migrations and starting server ==="
-                cd "${REPO_DIR}"
+                echo "=== Running migrations and starting Django server ==="
+                cd ${REPO_DIR}
                 . django-venv/bin/activate
                 python manage.py migrate
                 nohup python manage.py runserver 0.0.0.0:8000 &
