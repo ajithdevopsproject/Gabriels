@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         VENV = 'django-venv'
     }
@@ -8,7 +7,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/ajithdevopsproject/Gabriels.git'
+                git branch: 'main', url: 'https://github.com/ajithdevopsproject/Gabriels.git'
             }
         }
 
