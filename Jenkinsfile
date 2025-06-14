@@ -15,7 +15,7 @@ pipeline {
                     sudo apt update -y
                     sudo apt upgrade -y
 
-                    echo "=== Installing Python, MySQL packages, firewall tools ==="
+                    echo "=== Installing required packages ==="
                     sudo apt install -y python3 python3-pip python3-venv \
                         default-libmysqlclient-dev build-essential \
                         pkg-config libmysqlclient-dev ufw
@@ -23,10 +23,10 @@ pipeline {
             }
         }
 
-        stage('Firewall Ports') {
+        stage('Configure Firewall') {
             steps {
                 sh '''
-                    echo "=== Enabling UFW and opening ports ==="
+                    echo "=== Enabling UFW and allowing ports ==="
                     sudo ufw --force enable
                     sudo ufw allow 22
                     sudo ufw allow 80
@@ -41,7 +41,7 @@ pipeline {
         stage('Clone Repo') {
             steps {
                 sh '''
-                    echo "=== Cloning GitHub project ==="
+                    echo "=== Cloning GitHub repo ==="
                     if [ -d "${REPO_DIR}" ]; then
                         echo "Repo already cloned."
                     else
@@ -51,16 +51,15 @@ pipeline {
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Setup Python Environment & Install Requirements') {
             steps {
                 sh '''
-                    echo "=== Setting up virtual environment and installing requirements ==="
+                    echo "=== Creating virtual environment and installing requirements ==="
                     cd ${REPO_DIR}
                     rm -rf django-venv
                     python3 -m venv django-venv
-                    . django-venv/bin/activate
-
-                    pip install --upgrade pip
+                    . django-venv/bin/activate && \
+                    pip install --upgrade pip && \
                     pip install -r requirements.txt
                 '''
             }
@@ -69,7 +68,7 @@ pipeline {
         stage('Configure settings.py') {
             steps {
                 sh '''
-                    echo "=== Overwriting database settings.py ==="
+                    echo "=== Writing custom DB config to settings.py ==="
                     cd ${REPO_DIR}
                     cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 DATABASES = {
@@ -87,13 +86,13 @@ EOL
             }
         }
 
-        stage('Run Django Server') {
+        stage('Run Django') {
             steps {
                 sh '''
-                    echo "=== Starting Django app ==="
+                    echo "=== Running Django server ==="
                     cd ${REPO_DIR}
-                    . django-venv/bin/activate
-                    python manage.py migrate
+                    . django-venv/bin/activate && \
+                    python manage.py migrate && \
                     nohup python manage.py runserver 0.0.0.0:8000 &
                 '''
             }
