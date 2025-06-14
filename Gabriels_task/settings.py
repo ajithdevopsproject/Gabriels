@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'wiselearns_mari',       # your DB name
         'USER': 'admin',                 # your DB user
         'PASSWORD': 'Admin@123',         # your DB password
-        'HOST': '127.0.0.1',             # ✅ Not 'localhost'
+        'HOST': '3.108.215.104',             # ✅ Not 'localhost'
         'PORT': '3306',
     }
 }
