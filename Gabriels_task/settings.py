@@ -17,7 +17,7 @@ SECRET_KEY = 'django-insecure-0=)&kth-o5upqfqq-a^w*k3o7a&bmvvfv-k&9u9m74gol1a-z@
 DEBUG = True
 
 # ✅ Add your public IP here to allow external access
-ALLOWED_HOSTS = ['13.203.209.162']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
