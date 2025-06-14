@@ -77,14 +77,13 @@ WSGI_APPLICATION = 'Gabriels_task.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'your_database_name',
-        'USER': 'admin',
-        'PASSWORD': 'Admin@123',
-        'HOST': '13.203.209.162',
+        'NAME': 'wiselearns_mari',       # your DB name
+        'USER': 'admin',                 # your DB user
+        'PASSWORD': 'Admin@123',         # your DB password
+        'HOST': '13.203.209.162',             # ✅ Not 'localhost'
         'PORT': '3306',
     }
 }
-
 
 
 
