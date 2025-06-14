@@ -11,29 +11,29 @@ pipeline {
         stage('System Setup') {
             steps {
                 sh '''
-                    echo "=== Updating system packages ==="
-                    sudo apt update -y
-                    sudo apt upgrade -y
+                echo "=== Updating system packages ==="
+                sudo apt update -y
+                sudo apt upgrade -y
 
-                    echo "=== Installing required packages ==="
-                    sudo apt install -y python3 python3-pip python3-venv \
-                        default-libmysqlclient-dev build-essential \
-                        pkg-config libmysqlclient-dev ufw
+                echo "=== Installing Python3, pip, venv, MySQL client, and build tools ==="
+                sudo apt install -y python3 python3-pip python3-venv \
+                    default-libmysqlclient-dev build-essential \
+                    pkg-config libmysqlclient-dev ufw
                 '''
             }
         }
 
-        stage('Configure Firewall') {
+        stage('Firewall Setup') {
             steps {
                 sh '''
-                    echo "=== Enabling UFW and allowing ports ==="
-                    sudo ufw --force enable
-                    sudo ufw allow 22
-                    sudo ufw allow 80
-                    sudo ufw allow 8000
-                    sudo ufw allow 8080
-                    sudo ufw allow 3306
-                    sudo ufw reload
+                echo "=== Enabling UFW and allowing ports ==="
+                sudo ufw --force enable
+                sudo ufw allow 22
+                sudo ufw allow 80
+                sudo ufw allow 8000
+                sudo ufw allow 8080
+                sudo ufw allow 3306
+                sudo ufw reload
                 '''
             }
         }
@@ -41,26 +41,26 @@ pipeline {
         stage('Clone Repo') {
             steps {
                 sh '''
-                    echo "=== Cloning GitHub repo ==="
-                    if [ -d "${REPO_DIR}" ]; then
-                        echo "Repo already cloned."
-                    else
-                        git clone https://ajithdevopsproject:${GIT_PAT}@github.com/ajithdevopsproject/Gabriels.git
-                    fi
+                echo "=== Cloning GitHub repo ==="
+                rm -rf ${REPO_DIR}
+                git clone https://ajithdevopsproject:${GIT_PAT}@github.com/ajithdevopsproject/Gabriels.git
                 '''
             }
         }
 
-        stage('Setup Python Environment & Install Requirements') {
+        stage('Setup Python Env and Install Packages') {
             steps {
                 sh '''
-                    echo "=== Creating virtual environment and installing requirements ==="
-                    cd ${REPO_DIR}
-                    rm -rf django-venv
-                    python3 -m venv django-venv
-                    . django-venv/bin/activate && \
-                    pip install --upgrade pip && \
-                    pip install -r requirements.txt
+                cd ${REPO_DIR}
+
+                echo "=== Creating virtual environment ==="
+                python3 -m venv django-venv
+                . django-venv/bin/activate
+
+                echo "=== Installing required Python packages ==="
+                pip install --upgrade pip
+                pip install asgiref==3.7.2 Django==4.2.4 mysqlclient==2.2.0 \
+                    PyMySQL==1.1.0 sqlparse==0.4.4 tzdata==2023.3
                 '''
             }
         }
@@ -68,9 +68,9 @@ pipeline {
         stage('Configure settings.py') {
             steps {
                 sh '''
-                    echo "=== Writing custom DB config to settings.py ==="
-                    cd ${REPO_DIR}
-                    cat <<EOL > Gabriels_task/Gabriels_task/settings.py
+                cd ${REPO_DIR}
+                echo "=== Configuring settings.py ==="
+                cat <<EOL > Gabriels_task/Gabriels_task/settings.py
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -86,14 +86,17 @@ EOL
             }
         }
 
-        stage('Run Django') {
+        stage('Migrate and Run Django App') {
             steps {
                 sh '''
-                    echo "=== Running Django server ==="
-                    cd ${REPO_DIR}
-                    . django-venv/bin/activate && \
-                    python manage.py migrate && \
-                    nohup python manage.py runserver 0.0.0.0:8000 &
+                cd ${REPO_DIR}
+                . django-venv/bin/activate
+
+                echo "=== Applying migrations ==="
+                python manage.py migrate
+
+                echo "=== Starting Django server ==="
+                nohup python manage.py runserver 0.0.0.0:8000 &
                 '''
             }
         }
