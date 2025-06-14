@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'Gabriels_task.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'wiselearns_mari',
+        'NAME': 'ajith',
         'USER': 'root',
         'PASSWORD':'systems',
-        'HOST':'localhost',
+        'HOST':'3.108.215.104',
         'PORT':3306
     }
 }
