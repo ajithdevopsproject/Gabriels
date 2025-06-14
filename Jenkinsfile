@@ -54,7 +54,7 @@ pipeline {
             }
         }
 
-        stage('Python Virtual Env & Requirements') {
+                stage('Python Virtual Env & Requirements') {
             steps {
                 sh '''
                 echo "=== Setting up Python environment and installing requirements ==="
@@ -67,7 +67,7 @@ pipeline {
                 python3 -m venv django-venv
                 . django-venv/bin/activate
 
-                echo "Writing requirements.txt"
+                echo "=== Writing requirements.txt ==="
                 cat <<EOF > requirements.txt
 asgiref==3.7.2
 Django==4.2.4
@@ -77,12 +77,13 @@ sqlparse==0.4.4
 tzdata==2023.3
 EOF
 
-                echo "Installing requirements..."
+                echo "=== Installing requirements ==="
                 pip install --upgrade pip
                 pip install -r requirements.txt
                 '''
             }
         }
+
 
         stage('Configure settings.py') {
             steps {
